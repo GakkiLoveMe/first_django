@@ -23,4 +23,3 @@ class Address(BaseModel):
     class Meta:
         db_table = "df_address"
 
-    pass

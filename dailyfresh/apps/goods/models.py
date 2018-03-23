@@ -1,5 +1,6 @@
 from django.db import models
 from utils.models import BaseModel
+from tinymce.models import HTMLField
 
 # Create your models here.
 
@@ -23,6 +24,7 @@ class Goods(BaseModel):
     """商品SPU表"""
     name = models.CharField(max_length=100, verbose_name='名称')
     # TODO 详细介绍
+    desc = HTMLField(verbose_name='详细介绍', default='', blank=True)
 
     class Meta:
         db_table = "df_goods"
@@ -82,5 +84,43 @@ class IndexGoodsBanner(BaseModel):
 
     def __str__(self):
         return str(self.sku)
+
+
+class IndexCategoryGoodsBanner(BaseModel):
+    """主页分类商品展示"""
+    DISPLAY_TYPE_CHOICES = (
+        (0, "标题"),
+        (1, "图片")
+    )
+    category = models.ForeignKey(GoodsCategory, verbose_name="商品类别")
+    sku = models.ForeignKey(GoodsSKU, verbose_name="商品SKU")
+    display_type = models.SmallIntegerField(choices=DISPLAY_TYPE_CHOICES, verbose_name="展示类型")
+    index = models.SmallIntegerField(default=0, verbose_name="顺序")
+
+    class Meta:
+        db_table = "df_index_category_goods"
+        verbose_name = "主页分类展示商品"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return str(self.sku)
+
+
+class IndexPromotionBanner(BaseModel):
+    """主页促销活动展示"""
+    name = models.CharField(max_length=50, verbose_name="活动名称")
+    url = models.URLField(verbose_name="活动连接")
+    image = models.ImageField(upload_to="banner", verbose_name="图片")
+    index = models.SmallIntegerField(default=0, verbose_name="顺序")
+
+    class Meta:
+        db_table = "df_index_promotion"
+        verbose_name = "主页促销活动"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.name
+
+
 
 

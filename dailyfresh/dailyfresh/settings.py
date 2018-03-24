@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'goods',
     'orders',
     'cart',
+    'tinymce',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -110,7 +111,22 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/static/'  # 用来判断是否为静态文件
 
+# 设置静态文件加载路径
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 AUTH_USER_MODEL = 'users.User'  # 规定创建user的模型类
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.163.com'
+EMAIL_PORT = 25
+# 发送邮件的邮箱
+EMAIL_HOST_USER = '18222549491@163.com'
+# 在邮箱中设置的客户端授权密码
+EMAIL_HOST_PASSWORD = 'jin199022'
+# 收件人看到的发件人
+EMAIL_FROM = '天天生鲜<18222549491@163.com>'
+

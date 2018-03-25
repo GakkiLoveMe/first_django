@@ -1,5 +1,6 @@
 from django.conf.urls import url
 from users import views
+from django.contrib.auth.decorators import login_required
 
 
 urlpatterns = [
@@ -7,5 +8,9 @@ urlpatterns = [
     url(r'^active/(.+)', views.active),
     url(r'^exists$', views.exists),
     url(r'^login$', views.LoginView.as_view()),
-    url(r'^index$', views.index),
+    url(r'^logout$', views.logout_user),
+    url(r'^info$', views.info),
+    url(r'^order$', views.order),
+    url(r'^site$', login_required(views.SiteView.as_view())),  # 类视图添加装饰器
+    url(r'^area$', views.area),
 ]

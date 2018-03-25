@@ -1,13 +1,16 @@
 from django.shortcuts import render, redirect
-from django.views.generic import View
+from django.views.generic import View  # 创建类试图
 from django.http import HttpResponse, JsonResponse
 import re
-from .models import User, Address
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired
+from .models import User, Address, AreaInfo
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired  # 签名加密
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail  # django 邮件发送模块
 from celery_tasks.tasks import send_active_email
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout  # 验证，登陆，登出
+from django.contrib.auth.decorators import login_required  # 验证登陆装饰器
+from django_redis import get_redis_connection  # django链接redis
+from goods.models import GoodsSKU
 
 # Create your views here.
 
@@ -79,7 +82,7 @@ class RegisterView(View):
             return render(request, 'register.html', context)
 
     # 2,校验通过,则储存用户对象
-        user = User.objects.create_user(username=name, password=pwd, email=email)
+        user = User.objects.create_user(name, email, pwd)
         # 默认不激活账户
         user.is_active = False
         user.save()
@@ -97,7 +100,7 @@ class RegisterView(View):
         #           html_message=msg)
 
         # celery 发送异步邮件
-        send_active_email.delay(email, user.id)
+        send_active_email.delay(user.id, user.email)
 
     # 4,通知用户激活
         return HttpResponse('邮件已发送,为了不影响您的使用,请在两个小时内确认邮件!')
@@ -184,7 +187,7 @@ class LoginView(View):
         login(request, user)
 
         # 是否记住用户名
-        response = redirect('/users/index')
+        response = redirect('/users/info')
         if remember is not None:
             # print(4)
             response.set_cookie('user_name', user_name, expires=60*60*24*7)
@@ -195,6 +198,110 @@ class LoginView(View):
         return response
 
 
-def index(request):
-    return render(request, 'index.html')
+def logout_user(request):
+    """退出登陆"""
+    logout(request)
+    return redirect('/users/login')
 
+
+@login_required
+def info(request):
+    """用户中心"""
+    # 从redis读取浏览数据
+    client = get_redis_connection()
+    history_list = client.lrange("history%s" % request.user.id, 0, -1)
+    history_list2 = list()
+    if history_list:
+        for gid in history_list:
+            history_list2.append(GoodsSKU.objects.filter(pk=gid))
+    # 查询默认收货地址,显示信息
+    addr = request.user.address_set.all().filter(isDefault=1)
+    if addr:
+        addr = addr[0]
+    else:
+        addr = ''
+
+    context = {
+        'title': '个人信息',
+        'addr': addr,
+        'history_list2': history_list2,
+    }
+    return render(request, 'user_center_info.html', context)
+
+
+@login_required
+def order(request):
+    """用户订单页"""
+    # 构造上下文
+    context = {
+        'title': '全部订单',
+    }
+    return render(request, 'user_center_order.html', context)
+
+
+class SiteView(View):
+    """显示和添加用户地址"""
+    def get(self, request):
+        # 处理get请求
+        addr_list = Address.objects.filter(user=request.user)
+        context = {
+            'title': '收货地址',
+            'addr_list': addr_list,
+        }
+        return render(request, 'user_center_site.html', context)
+
+    def post(self, request):
+        # 处理post请求
+        receiver = request.POST.get('receiver')
+        phone = request.POST.get('phone')
+        detail_addr = request.POST.get('addr')
+        code = request.POST.get('code')
+        province = request.POST.get('province')
+        city = request.POST.get('city')
+        district = request.POST.get('district')
+        default = request.POST.get('default')
+        user = request.user
+
+        # 构造上下文
+        context = {
+            'title': '收货地址',
+            'err_msg': '',
+        }
+
+        # 判断信息是否完整
+        if not all([receiver, phone, detail_addr, code, province, city, district]):
+            context['err_msg'] = '请把填写信息完整'
+            return render(request, 'user_center_site.html', context)
+
+        # 保存用户地址信息
+        addr = Address()
+        addr.user = user
+        addr.receiver_name = receiver
+        addr.receiver_mobile = phone
+        addr.zip_code = code
+        addr.province_id = province
+        addr.city_id = city
+        addr.detail_addr = detail_addr
+        addr.district_id = district
+
+        # 判断是否为默认地址
+        if default is not None:
+            addr.isDefault = True
+
+        addr.save()
+        return redirect('/users/site')
+
+
+def area(request):
+    """接收ajax请求显示地区"""
+    pid = request.GET.get('pid')
+    if pid is None:
+        # 显示省市
+        slist = AreaInfo.objects.filter(aParent__isnull=True)
+    else:
+        slist = AreaInfo.objects.filter(aParent_id=pid)
+    slist2 = list()
+    # 重新组织数据格式
+    for s in slist:
+        slist2.append({'id': s.id, 'title': s.title})
+    return JsonResponse({'slist2': slist2})

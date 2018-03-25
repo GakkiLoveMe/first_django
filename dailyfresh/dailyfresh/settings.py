@@ -130,3 +130,22 @@ EMAIL_HOST_PASSWORD = 'jin199022'
 # 收件人看到的发件人
 EMAIL_FROM = '天天生鲜<18222549491@163.com>'
 
+# 缓存
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/5",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+
+# Session
+# http://django-redis-chs.readthedocs.io/zh_CN/latest/#session-backend
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+LOGIN_URL = '/users/login'

@@ -9,7 +9,7 @@ app = Celery('celery_tasks.tasks', broker='redis://127.0.0.1:6379/6')
 
 
 @app.task
-def send_active_email(email, id):
+def send_active_email(id, email):
     """发送验证邮件"""
 
     # 用户信息加密

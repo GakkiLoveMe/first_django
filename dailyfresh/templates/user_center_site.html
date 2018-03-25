@@ -1,0 +1,110 @@
+{% extends 'base_user.html' %}
+{% block head %}
+    <script>
+        $(function () {
+           $.get('/users/area', function (data) {
+               // {'slist2':[{'id':, "title": },{}]}
+               var list = data.slist2;
+               var province = $("#province");
+               $.each(list, function (i,n) {
+                   // n.id n.title
+                   province.append('<option value="' + n.id+ '">' + n.title + '</option>');
+               });
+
+           });
+
+            $('#province').change(function () {
+                $.get('/users/area', {'pid': $(this).val()}, function (data) {
+                    var list = data.slist2;
+                    // 清楚option选项
+                    var city = $('#city').empty().append('<option value="0">请选择</option>');
+                    $('#district').empty().append('<option value="0">请选择</option>');
+                    $.each(list, function (i,n) {
+                        city.append('<option value="' + n.id+ '">' + n.title + '</option>');
+                    });
+                });
+            });
+
+            $('#city').change(function () {
+                $.get('/users/area', {'pid': $(this).val()}, function (data) {
+                    var list = data.slist2;
+                    var district = $('#district').empty().append('<option value="0">请选择</option>');
+                    $.each(list, function (i,n) {
+                        district.append('<option value="' + n.id+ '">' + n.title + '</option>');
+                    });
+                });
+            });
+        });
+    </script>
+{% endblock head %}
+{% block body2 %}
+	<div class="main_con clearfix">
+		<div class="left_menu_con clearfix">
+			<h3>用户中心</h3>
+			<ul>
+				<li><a href="/users/info">· 个人信息</a></li>
+				<li><a href="/users/order">· 全部订单</a></li>
+				<li><a href="#" class="active">· 收货地址</a></li>
+			</ul>
+		</div>
+		<div class="right_content clearfix">
+				<h3 class="common_title2">收货地址</h3>
+				<div class="site_con">
+					<dl>
+						<dt>当前地址：</dt>
+                        {% for addr in addr_list %}
+						<dd>{{ addr.province.title }} {{ addr.city.title }} {{ addr.district.title }} {{ addr.detail_addr }}
+                            （{{ addr.receiver_name }} 收） {{ addr.receiver_mobile }}
+                        {% if addr.isDefault %}
+                            [默认]
+                        {% endif %}
+                        </dd>
+                        {% empty %}
+                            <dd>请添加收货地址</dd>
+                        {% endfor %}
+					</dl>					
+				</div>
+				<h3 class="common_title2">编辑地址</h3>
+				<div class="site_con">
+					<form method="post">
+                        {% csrf_token %}
+						<div class="form_group">
+							<label>收件人：</label>
+							<input type="text" name="receiver">
+						</div>
+						<div class="form_group form_group2">
+                            <div>
+                               <label>详细地址：</label>
+                            <select name="province" id="province">
+                                <option value="0">请选择</option>
+                            </select>
+                            <select name="city" id="city">
+                                <option value="0">请选择</option>
+                            </select>
+                            <select name="district" id="district">
+                                <option value="0">请选择</option>
+                            </select>
+                            </div>
+							<div>
+                                <input type="text" name="addr" id="addr">
+                            </div>
+						</div>
+						<div class="form_group">
+							<label>邮编：</label>
+							<input type="text" name="code">
+						</div>
+						<div class="form_group">
+							<label>手机：</label>
+							<input type="text" name="phone">
+						</div>
+                        <div class="form_group">
+                            <label>是否设为默认:</label>
+                            <input type="checkbox" name="default" style="width: 17px; height: 17px;">
+                        </div>
+						<input type="submit" value="提交" class="info_submit">
+					</form>
+				</div>
+		</div>
+	</div>
+{% endblock body2 %}
+

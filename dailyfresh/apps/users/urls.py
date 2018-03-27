@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^logout$', views.logout_user),
     url(r'^info$', views.info),
     url(r'^order$', views.order),
-    url(r'^site$', login_required(views.SiteView.as_view())),  # 类视图添加装饰器
+    # url(r'^site$', login_required(views.SiteView.as_view())),  # 类视图添加装饰器
+    url(r'site$', views.SiteView.as_view()),
     url(r'^area$', views.area),
 ]

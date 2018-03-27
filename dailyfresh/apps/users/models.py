@@ -29,6 +29,7 @@ class Address(BaseModel):
 
 
 class AreaInfo(models.Model):
+    """地区模型类"""
     title = models.CharField(max_length=20)
     aParent = models.ForeignKey('self', null=True, blank=True)
 

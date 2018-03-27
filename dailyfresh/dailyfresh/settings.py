@@ -148,4 +148,22 @@ CACHES = {
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
+# 登陆验证时需配置,登录失败url
 LOGIN_URL = '/users/login'
+
+# 配置Django自定义的存储系统
+DEFAULT_FILE_STORAGE = 'utils.storage.FdfsStorage'
+
+# fdfs服务器配置文件路径
+FDFS_CLIENT = os.path.join(BASE_DIR, 'utils/fdfs_client.conf')
+
+# nginx获取的地址
+FDFS_SERVER = 'http://127.0.0.1:8888/'
+
+# 富文本设置
+TINYMCE_DEFAULT_CONFIG = {
+  'theme': 'advanced', # 丰富样式
+  'width': 600,
+  'height': 400,
+}
+

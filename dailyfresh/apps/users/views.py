@@ -9,6 +9,7 @@ from django.core.mail import send_mail  # django 邮件发送模块
 from celery_tasks.tasks import send_active_email
 from django.contrib.auth import authenticate, login, logout  # 验证，登陆，登出
 from django.contrib.auth.decorators import login_required  # 验证登陆装饰器
+from utils.views import LoginRequiredViewMixin  # 定义多继承类
 from django_redis import get_redis_connection  # django链接redis
 from goods.models import GoodsSKU
 
@@ -186,8 +187,9 @@ class LoginView(View):
         # 记录状态,记录session
         login(request, user)
 
-        # 是否记住用户名
-        response = redirect('/users/info')
+        # 是否记住用户名# http://127.0.0.1:8000/user/login?next=/user/site
+        response = request.GET.get('next', '/users/info')
+        response = redirect(response)
         if remember is not None:
             # print(4)
             response.set_cookie('user_name', user_name, expires=60*60*24*7)
@@ -239,7 +241,8 @@ def order(request):
     return render(request, 'user_center_order.html', context)
 
 
-class SiteView(View):
+# class SiteView(View):
+class SiteView(LoginRequiredViewMixin, View):
     """显示和添加用户地址"""
     def get(self, request):
         # 处理get请求

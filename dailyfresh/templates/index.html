@@ -4,7 +4,7 @@
 	<script type="text/javascript" src="/static/js/slide.js"></script>
 {% endblock head %}
 {% block body2 %}
-	<div class="navbar_con">
+    <div class="navbar_con">
 		<div class="navbar">
 			<h1 class="fl">全部商品分类</h1>
 			<ul class="navlist fl">
@@ -16,7 +16,6 @@
 			</ul>
 		</div>
 	</div>
-
 	<div class="center_con clearfix">
 		<ul class="subnav fl">
             {% for category in category_list %}
@@ -26,7 +25,7 @@
 		<div class="slide fl">
 			<ul class="slide_pics">
                 {% for banner in banner_list %}
-				<li><a href="/{{ banner.sku.id }}"><img src="{{ banner.image.url }}" alt="{{ banner.sku.name }}"></a></li>
+				<li><a href="/detail{{ banner.sku.id }}"><img src="{{ banner.image.url }}" alt="{{ banner.sku.name }}"></a></li>
                 {% endfor %}
 			</ul>
 			<div class="prev"></div>
@@ -39,7 +38,6 @@
             {% endfor %}
 		</div>
 	</div>
-
     {% for category in category_list %}
 	<div class="list_model">
 		<div class="list_title clearfix">
@@ -47,7 +45,7 @@
 			<div class="subtitle fl">
 				<span>|</span>
                 {% for title in category.title_list %}
-				<a href="/{{ title.sku.id }}">{{ title.sku.name }}</a>
+				<a href="/detail{{ title.sku.id }}">{{ title.sku.name }}</a>
                 {% endfor %}
 			</div>
 			<a href="#" class="goods_more fr" id="fruit_more">查看更多 ></a>
@@ -58,9 +56,9 @@
 			<ul class="goods_list fl">
                 {% for image in category.image_list %}
 				<li>
-					<h4><a href="#">{{ image.sku.name }}</a></h4>
-					<a href="/{{ image.sku.id }}"><img src="{{ image.sku.default_image.url }}"></a>
-					<div class="prize">{{ image.sku.unit }} {{ image.sku.price }}</div>
+					<h4><a href="/detail{{ image.sku.id }}">{{ image.sku.name }}</a></h4>
+					<a href="/detail{{ image.sku.id }}"><img src="{{ image.sku.default_image.url }}"></a>
+					<div class="prize">¥ {{ image.sku.price }}</div>
 				</li>
                 {% endfor %}
 			</ul>

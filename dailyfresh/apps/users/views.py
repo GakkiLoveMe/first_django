@@ -173,6 +173,7 @@ class LoginView(View):
 
         # 验证用户名和密码是否存在
         user = authenticate(username=user_name, password=user_pwd)
+
         if user is None:
             context['err_msg'] = '用户名或密码错误'
             # print(2)
@@ -209,6 +210,7 @@ def logout_user(request):
 @login_required
 def info(request):
     """用户中心"""
+    # TODO 商品浏览记录添加
     # 从redis读取浏览数据
     client = get_redis_connection()
     history_list = client.lrange("history%s" % request.user.id, 0, -1)

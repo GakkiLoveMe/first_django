@@ -26,8 +26,9 @@ SECRET_KEY = 't7s!-#)zr#xj5r2dn$)gzy^eu*4!1ul_tvnp=#j64tdnr+81p('
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*',]
 
 
 # Application definition
@@ -167,3 +168,5 @@ TINYMCE_DEFAULT_CONFIG = {
   'height': 400,
 }
 
+# 主页静态文件存储路径
+GENERATE_HTML = os.path.join(BASE_DIR, 'static/html')

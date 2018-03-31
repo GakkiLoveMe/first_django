@@ -217,7 +217,8 @@ def info(request):
     history_list2 = list()
     if history_list:
         for gid in history_list:
-            history_list2.append(GoodsSKU.objects.filter(pk=gid))
+            history_list2.append(GoodsSKU.objects.get(pk=gid))
+
     # 查询默认收货地址,显示信息
     addr = request.user.address_set.all().filter(isDefault=1)
     if addr:

@@ -1,3 +1,4 @@
+"""类试图添加装饰器"""
 from django.views.generic import View
 from django.contrib.auth.decorators import login_required
 

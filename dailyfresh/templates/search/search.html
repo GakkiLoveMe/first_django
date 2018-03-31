@@ -1,0 +1,82 @@
+{% extends 'base_goods.html' %}
+{% block body2 %}
+	<div class="navbar_con">
+		<div class="navbar clearfix">
+			<div class="subnav_con fl">
+				<h1>全部商品分类</h1>
+				<span></span>
+				<ul class="subnav">
+                    {% for category in category_list %}
+					<li><a href="/list{{ category.id }}" class="{{ category.logo }}">{{ category.name }}</a></li>
+                    {% endfor %}
+				</ul>
+			</div>
+			<ul class="navlist fl">
+				<li><a href="">首页</a></li>
+				<li class="interval">|</li>
+				<li><a href="">手机生鲜</a></li>
+				<li class="interval">|</li>
+				<li><a href="">抽奖</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="breadcrumb">
+        <a href="#">搜索&nbsp;<span style="color:red;">{{ query }}</span>&nbsp;结果如下：</a>
+	</div>
+
+	<div class="main_wrap clearfix">
+
+{#		<div class="r_wrap fr clearfix">#}
+			<div class="sort_bar">
+				<a href="?order=1" {% if order_id == 1 %}class="active"{% endif %}>默认</a>
+            {% if order_id == 2 %}
+				<a href="?order=3" class="active">价格(升)</a>
+                {% else %}
+                <a href="?order=2" {% if order_id == 3 %}class="active"{% endif %}>价格(降)</a>
+            {% endif %}
+				<a href="?order=4" {% if order_id == 4 %}class="active"{% endif %}>人气</a>
+			</div>
+
+			<ul class="goods_type_list clearfix">
+                {% for p in page_obj %}
+				<li>
+					<a href="/detail{{ p.object.id }}"><img src="{{ p.object.default_image.url }}"></a>
+					<h4><a href="/detail{{ p.object.id }}">{{ p.object.name }}</a></h4>
+					<div class="operate">
+						<span class="prize">￥{{ p.object.price }}</span>
+						<span class="unit">{{ p.object.price }}/{{ p.object.unit }}</span>
+						<a href="#" class="add_goods" title="加入购物车"></a>
+					</div>
+				</li>
+                    {% empty %}
+                    <p>没有找到您想要的商品</p>
+                {% endfor %}
+			</ul>
+
+			<div class="pagenation">
+                {% if page_obj.has_previous %}
+                <a href="?q={{ query }}&page=1">首页</a>
+				<a href="?q={{ query }}&page={{ page_obj.number|add:-1 }}">&lt;上一页</a>
+                {% else %}
+                <label style="display: block;">首页</label>
+                <label style="display: block;">上一页</label>
+                {% endif %}
+                {% for page_num in page_list %}
+                    {% if page_num == page_obj.number %}
+				        <a href="?q={{ query }}&page={{ page_num }}" class="active" style="color: red;">{{ page_num }}</a>
+                    {% else %}
+                        <a href="?q={{ query }}&page={{ page_num }}">{{ page_num }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+				<a href="?q={{ query }}&page={{ page_obj.number|add:1 }}">下一页&gt;</a>
+                <a href="?q={{ query }}&page={{ paginator.num_pages }}">末页</a>
+                {% else %}
+                <label style="display: block;">下一页</label>
+                <label style="display: block;">末页</label>
+                {% endif %}
+			</div>
+{#		</div>#}
+	</div>
+{% endblock body2 %}

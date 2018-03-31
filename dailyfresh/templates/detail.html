@@ -53,6 +53,7 @@
 			<div class="goods_num clearfix">
 				<div class="num_name fl">数 量：</div>
 				<div class="num_add fl">
+                    <input type="hidden" id="sku_id" value="{{ sku.id }}">
 					<input type="text" class="num_show fl" value="1">
 					<a href="javascript:;" class="add fr">+</a>
 					<a href="javascript:;" class="minus fr">-</a>	
@@ -108,18 +109,35 @@
 		var $to_x = $('#show_count').offset().top;
 		var $to_y = $('#show_count').offset().left;
 
-		$(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
 		$('#add_cart').click(function(){
-			$(".add_jump").stop().animate({
-				'left': $to_y+7,
-				'top': $to_x+7},
-				"fast", function() {
-					$(".add_jump").fadeOut('fast',function(){
-						$('#show_count').html(2);
-					});
+		    // 通过post请求发送
+            $.post('/cart/add', {
+                'sku_id': $('#sku_id').val(),
+                'count': $('.num_show').val(),
+                'csrfmiddlewaretoken': '{{ csrf_token }}'  //满足csrf验证
+            }, function (data) {
+                // 根据获取的数据判断
+                if (data.status == 1){
+                    $(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
+                    // 动画函数
+                    $(".add_jump").stop().animate({
+                            'left': $to_y+7,
+                            'top': $to_x+7},
+                        "fast", function() {
+                            $(".add_jump").fadeOut('slow',function(){
+                                // 修改购物车数量
+                                $('#show_count').html(data.count);
+                            });
 
-			});
-		})
+                        });
+
+                }else if(data.status == 2){
+                    alert('没有此商品');
+                }else if(data.status == 3){
+                    alert('请输入正确的商品数量');
+                }
+            });
+		});
 
         // 改变数量计算总价
         $('.num_show').blur(function () {

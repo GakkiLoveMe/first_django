@@ -6,6 +6,7 @@ from django.core.paginator import Paginator, Page  # 分页功能
 from django_redis import get_redis_connection
 from haystack.generic_views import SearchView  # haystack自定义视图
 from utils.page_list import get_page_list
+import json
 
 # Create your views here.
 
@@ -41,6 +42,9 @@ def index(request):
 
         # 设置缓存
         cache.set('index', context, 3600)
+    # 读取购物车数量
+    total_count = get_total_count(request)
+    context['total_count'] = total_count
 
     return render(request, 'index.html', context)
 
@@ -82,6 +86,9 @@ def detail(request, sku_id):
         # 浏览商品上限,删除多余
         if redis_client.llen(key) > 5:
             redis_client.rpop(key)
+
+    # 读取购物车数量
+    context['total_count'] = get_total_count(request)
 
     return render(request, 'detail.html', context)
 
@@ -142,7 +149,11 @@ def list(request, category_id):
         'page': page,
         'page_list': page_list,
         'order_id': order_id,
-    }
+        }
+
+    # 读取购物车数量
+    context['total_count'] = get_total_count(request)
+
     return render(request, 'list.html', context)
 
 
@@ -162,6 +173,8 @@ class MySearchView(SearchView):
 
         # 获取页码
         # self.index_id = int(request.GET.get('pindex', 1))
+        self.request = request
+
         return get_request
 
     def get_context_data(self, *args, **kwargs):
@@ -180,5 +193,25 @@ class MySearchView(SearchView):
         # do something
         # 返回当前请求的分页
         # context['page_obj'] = context['paginator'].page(index_id)
+        # 读取购物车数量
+        context['total_count'] = get_total_count(self.request)
 
         return context
+
+
+def get_total_count(request):
+    """获取所有商品的数量"""
+    total_count = 0
+    if request.user.is_authenticated():
+        redis_cli = get_redis_connection()
+        for count in redis_cli.hvals('cart%d' % request.user.id):
+            total_count += int(count)
+    else:
+        cart_str = request.COOKIES.get('cart')
+        if cart_str:
+            cart_list = json.loads(cart_str)
+            for k, v in cart_list.items():
+                total_count += v
+
+    return total_count
+

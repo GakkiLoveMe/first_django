@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required  # 验证登陆装饰�
 from utils.views import LoginRequiredViewMixin  # 定义多继承类
 from django_redis import get_redis_connection  # django链接redis
 from goods.models import GoodsSKU
+import json
 
 # Create your views here.
 
@@ -197,6 +198,25 @@ class LoginView(View):
         else:
             response.delete_cookie('user_name')
 
+        # 用户登陆后 把cookies中的商品添加到redis中
+        cart_str = request.COOKIES.get('cart')
+        if cart_str:
+            # 链接数据库
+            redis_cli = get_redis_connection()
+            cart_dict = json.loads(cart_str)  # 字符串转字典
+            key = 'cart%d' % request.user.id
+            # 判断是否有相同商品, 并添加到redis中
+            for k, v in cart_dict.items():
+                if redis_cli.hexists(key, k):
+                    count0 = int(redis_cli.hget(key, k))
+                    count1 = count0 + v
+                    if count1 > 5:
+                        count1 = 5
+                    redis_cli.hset(key, k, count1)
+                else:
+                    redis_cli.hset(key, k, v)
+            # 删除cookies
+            response.delete_cookie('cart')
     # 4,验证通过转向主页
         return response
 

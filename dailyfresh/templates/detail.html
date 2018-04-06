@@ -155,6 +155,7 @@
             if (num>5){
                 num = 5;
             };
+            // 显示到文本框
             $(this).val(num);
             var total_price = price * num;
             $('.total>em').text(total_price.toFixed(2) + '元');

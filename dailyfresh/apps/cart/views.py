@@ -11,7 +11,6 @@ def cart(request):
     """购物车"""
     # 购物车列表
     sku_list = []
-    pay = 0
 
     # 用户登陆后,从redis读取数据
     if request.user.is_authenticated():
@@ -22,25 +21,20 @@ def cart(request):
         for gid in id_list:
             sku = GoodsSKU.objects.get(pk=gid)
             sku.cart_count = int(redis_cli.hget(key, gid))  # 添加一个属性,把数量传递过去
-            sku.total_price = float(sku.price) * sku.cart_count
-            pay += sku.total_price
             sku_list.append(sku)
     else:
         # 没有登陆从cookies读取
         cart_str = request.COOKIES.get('cart')
         if cart_str:
             cart_list = json.loads(cart_str)
-            for k, v in cart_list:
+            for k, v in cart_list.items():
                 sku = GoodsSKU.objects.get(pk=k)
                 sku.cart_count = v
-                sku.total_price = float(sku.price) * sku.cart_count
-                pay += sku.total_price
                 sku_list.append(sku)
 
     context = {
         'title': '购物车',
         'sku_list': sku_list,
-        'pay': pay,
     }
     return render(request, 'cart.html', context)
 
@@ -121,3 +115,62 @@ def add(request):
 
         return response
 
+
+def edit(request):
+    """编辑购物车"""
+    # 接收请求
+    if request.method != 'POST':
+        return Http404()
+    # 接收数据
+    sku_id = request.POST.get('sku_id')
+    count = int(request.POST.get('count'))
+
+    # 后端有效性判断
+    if GoodsSKU.objects.filter(pk=sku_id).count() <= 0:
+        return JsonResponse({'status': 2})
+    if count <= 0:
+        count = 1
+    elif count >= 5:
+        count = 5
+    # 构造返回体
+    response = JsonResponse({'status': 1})
+
+    # 数据处理
+    if request.user.is_authenticated():
+        # redis中处理
+        redis_cli = get_redis_connection()
+        redis_cli.hset('cart%d' % request.user.id, sku_id, count)
+        pass
+    else:
+        # cookies中处理
+        cart_str = request.COOKIES.get('cart')
+        if cart_str:
+            cart_list = json.loads(cart_str)
+            cart_list[sku_id] = count
+            cart_str = json.dumps(cart_list)
+        response.set_cookie('cart', cart_str, expires=60*60*24*14)
+
+    return response
+
+
+def delete(request):
+    """删除购物车"""
+    if request.method != 'POST':
+        return Http404()
+    sku_id = request.POST.get('sku_id')
+    response = JsonResponse({'status': 1})
+    # redis删除
+    if request.user.is_authenticated():
+        redis_cli = get_redis_connection()
+        redis_cli.hdel('cart%d' % request.user.id, sku_id)
+        pass
+    else:
+        # cookies删除
+        cart_str = request.COOKIES.get('cart')
+        if cart_str:
+            cart_list = json.loads(cart_str)
+            cart_list.pop(sku_id)
+            cart_str = json.dumps(cart_list)
+        response.set_cookie('cart', cart_str, expires=60*60*24*14)
+
+    return response

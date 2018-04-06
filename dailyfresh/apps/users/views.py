@@ -12,7 +12,10 @@ from django.contrib.auth.decorators import login_required  # 验证登陆装饰�
 from utils.views import LoginRequiredViewMixin  # 定义多继承类
 from django_redis import get_redis_connection  # django链接redis
 from goods.models import GoodsSKU
+from orders.models import OrderInfo, OrderGoods
 import json
+from django.core.paginator import Paginator, Page
+from utils.page_list import get_page_list
 
 # Create your views here.
 
@@ -254,14 +257,14 @@ def info(request):
     return render(request, 'user_center_info.html', context)
 
 
-@login_required
-def order(request):
-    """用户订单页"""
-    # 构造上下文
-    context = {
-        'title': '全部订单',
-    }
-    return render(request, 'user_center_order.html', context)
+# @login_required
+# def order(request):
+#     """用户订单页"""
+#     # 构造上下文
+#     context = {
+#         'title': '全部订单',
+#     }
+#     return render(request, 'user_center_order.html', context)
 
 
 # class SiteView(View):
@@ -331,3 +334,37 @@ def area(request):
     for s in slist:
         slist2.append({'id': s.id, 'title': s.title})
     return JsonResponse({'slist2': slist2})
+
+
+class OrderView(LoginRequiredViewMixin, View):
+    """用户订单页"""
+
+    def get(self, request):
+        """处理post请求"""
+        # 读取数据库信息
+        order_list = OrderInfo.objects.filter(user=request.user)
+
+        # 获取分页信息
+        index = int(request.GET.get('pindex', 1))
+        paginator = Paginator(order_list, 2)
+        total_pages = paginator.num_pages
+
+        if index <= 0:
+            index = 1
+        if index >= total_pages:
+            index = total_pages
+
+        page = paginator.page(index)
+        # 获取分页列表
+        page_list = get_page_list(total_pages, index)
+
+        context = {
+            'title': '全部订单',
+            'page': page,
+            'page_list': page_list,
+        }
+        return render(request, 'user_center_order.html', context)
+
+    def post(self):
+        pass
+

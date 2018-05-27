@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.views.generic import View  # 创建类试图
+from django.views.generic import View  # 创建类视图
 from django.http import HttpResponse, JsonResponse
 import re
 from .models import User, Address, AreaInfo
@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.mail import send_mail  # django 邮件发送模块
 from celery_tasks.tasks import send_active_email
 from django.contrib.auth import authenticate, login, logout  # 验证，登陆，登出
+# from django.contrib.auth.hashers import make_password, check_password  # 用于密码加密,验证
 from django.contrib.auth.decorators import login_required  # 验证登陆装饰器
 from utils.views import LoginRequiredViewMixin  # 定义多继承类
 from django_redis import get_redis_connection  # django链接redis
@@ -87,6 +88,7 @@ class RegisterView(View):
             return render(request, 'register.html', context)
 
     # 2,校验通过,则储存用户对象
+    #     pwd = make_password(pwd, None, 'pbkdf2_sha256')
         user = User.objects.create_user(name, email, pwd)
         # 默认不激活账户
         user.is_active = False

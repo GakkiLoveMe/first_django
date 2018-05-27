@@ -25,7 +25,7 @@ def send_active_email(id, email):
 
 
 @app.task
-def generate_index():
+def generate_index():  # index页面静态化
     # 查询商品分类信息
     category_list = GoodsCategory.objects.all()
 

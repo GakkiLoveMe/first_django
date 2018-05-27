@@ -25,8 +25,8 @@ sys.path.insert(1, os.path.join(BASE_DIR, 'apps'))
 SECRET_KEY = 't7s!-#)zr#xj5r2dn$)gzy^eu*4!1ul_tvnp=#j64tdnr+81p('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-# DEBUG = False
+# DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*',]
 
@@ -147,7 +147,7 @@ CACHES = {
 # Session
 # http://django-redis-chs.readthedocs.io/zh_CN/latest/#session-backend
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"  # 会话存储
 SESSION_CACHE_ALIAS = "default"
 
 # 登陆验证时需配置,登录失败url
@@ -186,3 +186,14 @@ HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
 # 设置结果显示页面，每页显示多少条数据
 HAYSTACK_SEARCH_RESULTS_PER_PAGE = 1
+
+# 密码加密算法
+# PASSWORD_HASHERS = (
+#     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+#     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+#     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+#     'django.contrib.auth.hashers.BCryptPasswordHasher',
+#     'django.contrib.auth.hashers.SHA1PasswordHasher',
+#     'django.contrib.auth.hashers.MD5PasswordHasher',
+#     'django.contrib.auth.hashers.CryptPasswordHasher',
+# )

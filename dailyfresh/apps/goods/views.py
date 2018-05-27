@@ -6,7 +6,7 @@ from django.core.paginator import Paginator, Page  # 分页功能
 from django_redis import get_redis_connection
 from haystack.generic_views import SearchView  # haystack自定义视图
 from utils.page_list import get_page_list
-import json
+import pickle
 
 # Create your views here.
 
@@ -40,8 +40,9 @@ def index(request):
             'promotion_list': promotion_list,
         }
 
-        # 设置缓存
-        cache.set('index', context, 3600)
+        cache_str = pickle.dumps(context)
+        # 设置缓存,调用Django内部的缓存机制
+        cache.set('index', cache_str, 3600)
     # 读取购物车数量
     total_count = get_total_count(request)
     context['total_count'] = total_count
